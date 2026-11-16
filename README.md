@@ -1,5 +1,9 @@
 # pitiupi
 
+> **Trabalho prático de Redes de Computadores (UFSJ) — Julia**  
+> Este repositório contém o pitiupi com o plugin **Forca em Grupo** (multicast).  
+> Código e protocolo do plugin: [plugins/forca](plugins/forca/README.md)
+
 Ferramenta **P2P** : núcleo em Java com arquitetura de **plugins** (conversa na rede e compartilhamento de tela).
 
 **Documentação:** [docs/README.md](docs/README.md) · **Quickstart:** [docs/comecar.md](docs/comecar.md)

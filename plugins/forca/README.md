@@ -99,6 +99,50 @@ As mensagens estendem `Message` e são enviadas com serialização Java, uma por
    - se chegou a 6 erros, a partida acaba e a palavra é revelada.
 3. Cada computador aplica as mesmas regras às mesmas mensagens, então todos ficam com o mesmo jogo.
 
+### Sequência de uma partida
+
+1. Uma pessoa preenche a palavra e a dica e clica em **Começar partida**. O computador dela
+   gera um `idPartida` (UUID), começa a partida localmente e envia uma **NovaPartidaMessage**.
+2. Todos os outros recebem a NovaPartidaMessage e começam a mesma partida: forca vazia,
+   6 vidas, placar zerado.
+3. Os jogadores chutam letras. Cada chute é aplicado primeiro no computador de quem chutou e
+   depois enviado como **LetraMessage**. Os outros aplicam a mesma letra quando ela chega.
+4. A partida termina, em todos os computadores, quando a palavra fica completa (vitória) ou
+   quando chega a 6 erros (enforcado). Depois disso, novas LetraMessage são ignoradas.
+5. Qualquer pessoa pode começar uma nova partida, que substitui a anterior.
+
+### Turnos
+
+O jogo **não tem turnos**. Qualquer jogador pode chutar uma letra a qualquer momento, e quem
+chuta primeiro leva os pontos daquela letra. As únicas restrições são:
+
+- quem escolheu a palavra não pode chutar;
+- cada letra só pode ser chutada uma vez por partida;
+- depois que a partida termina, ninguém chuta até começar uma nova.
+
+As três são verificadas no computador de quem chuta, antes de enviar. As duas últimas também
+são verificadas em quem recebe: `aplicarLetra` ignora letra repetida e partida encerrada.
+
+### Mensagens perdidas, duplicadas ou fora de ordem
+
+O UDP multicast não garante entrega nem ordem, e o plugin **não** faz confirmação nem reenvio.
+O que acontece em cada caso:
+
+| Situação | O que o plugin faz | Consequência |
+|---|---|---|
+| A própria mensagem volta pelo multicast (eco) | NovaPartidaMessage com o mesmo `idPartida` é ignorada; LetraMessage com letra já chutada é ignorada | Nada muda: o eco nunca conta duas vezes |
+| Mensagem duplicada | Mesma regra do eco | Nada muda |
+| NovaPartidaMessage perdida | Não há reenvio | Aquele computador não entra na partida; as LetraMessage dela são ignoradas, porque o `idPartida` não é o da partida atual |
+| LetraMessage perdida | Não há reenvio | Aquele computador fica sem a letra: palavra, erros e placar diferentes dos outros até a próxima partida |
+| LetraMessage de uma partida antiga chega depois de uma nova começar | Ignorada, porque o `idPartida` não bate | Nada muda |
+| LetraMessage chega antes da NovaPartidaMessage | Ignorada, porque a partida ainda não existe ali | Aquele computador fica sem essa letra |
+| Duas pessoas chutam a mesma letra quase ao mesmo tempo | Cada computador aceita a que chegou primeiro e ignora a outra | Os pontos daquela letra podem ir para pessoas diferentes em computadores diferentes |
+
+Numa rede local, perda e troca de ordem são raras, então o jogo funciona bem na prática.
+Para garantir consistência, uma melhoria possível seria o criador da palavra ser a autoridade
+da partida: ele numeraria cada letra aceita e reenviaria periodicamente o estado completo
+(letras, erros e placar) para todos.
+
 Exemplo:
 
 ```
@@ -113,8 +157,7 @@ Caio  --LetraMessage(id=1, 'N', Caio)--> grupo     Caio +2 pontos, palavra compl
 
 - A palavra secreta viaja na mensagem sem criptografia. Quem capturar os pacotes da rede
   (por exemplo, com o Wireshark) consegue ver a palavra.
-- UDP não garante entrega nem ordem. Se uma mensagem se perder, um computador pode ficar com o
-  jogo diferente dos outros. Se duas pessoas chutarem a mesma letra quase juntas, cada
-  computador dá o ponto para quem chegou primeiro nele.
+- Não há confirmação nem reenvio de mensagens (veja a seção sobre mensagens perdidas).
 - Quem abrir o plugin no meio de uma partida só entra na próxima.
+- Duas pessoas com o mesmo nome somam pontos no mesmo lugar do placar.
 - Uma partida nova substitui a que estava acontecendo.
