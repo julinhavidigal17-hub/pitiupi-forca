@@ -4,7 +4,7 @@ Plugin para o [pitiupi](https://git.alice.ufsj.edu.br/fls/pitiupi) com o jogo da
 várias pessoas ao mesmo tempo. Uma pessoa escolhe a palavra secreta e todo mundo da sala
 chuta letras. A comunicação é **em grupo (multicast)**.
 
-Autora: Julia
+Autora: Júlia Paiva Vidigal
 
 ## Como funciona o jogo
 
