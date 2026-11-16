@@ -22,7 +22,7 @@ public class ForcaPlugin extends Plugin {
 
     @Override
     public String getAuthor() {
-        return "Julia";
+        return "Júlia Paiva Vidigal";
     }
 
     @Override

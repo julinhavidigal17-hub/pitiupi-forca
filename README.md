@@ -1,6 +1,6 @@
 # pitiupi
 
-> **Trabalho prático de Redes de Computadores (UFSJ) — Julia**  
+> **Trabalho prático de Redes de Computadores (UFSJ) — Júlia Paiva Vidigal**  
 > Este repositório contém o pitiupi com o plugin **Forca em Grupo** (multicast).  
 > Código e protocolo do plugin: [plugins/forca](plugins/forca/README.md)
 
